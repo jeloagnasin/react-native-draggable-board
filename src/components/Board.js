@@ -8,7 +8,8 @@ import {
   PanResponder,
   Animated,
   ScrollView,
-  Platform
+  Platform,
+  View,
 } from 'react-native';
 
 class Board extends React.Component {
@@ -19,6 +20,7 @@ class Board extends React.Component {
   constructor(props) {
     super(props);
 
+    this._attributes = {};
     this.verticalOffset = 0;
 
     this.state = {
@@ -38,6 +40,26 @@ class Board extends React.Component {
       onPanResponderRelease: this.onPanResponderRelease.bind(this),
       onPanResponderTerminate: this.onPanResponderRelease.bind(this)
     })
+  }
+
+  attributes() {
+    return this._attributes;
+  }
+
+  ref() {
+    return this._attributes.ref;
+  }
+
+  layout() {
+    return this._attributes.layout;
+  }
+
+  setRef(ref) {
+    this._attributes.ref = ref;
+  }
+
+  setLayout(layout) {
+    this._attributes.layout = layout;
   }
 
   componentWillUnmount() {
@@ -168,15 +190,16 @@ class Board extends React.Component {
           return;
         }
         const { x, y } = item.layout();
+        const boardLayout = this.layout();
         this.props.rowRepository.hide(columnId, item);
         this.setState({
           movingMode: true,
           draggedItem: item,
           srcColumnId: item.columnId(),
-          startingX: x,
-          startingY: y,
-          x: x,
-          y: y,
+          startingX: x - boardLayout.x,
+          startingY: y - boardLayout.y,
+          x: x - boardLayout.x,
+          y: y - boardLayout.y,
         });
         columnCallback();
         this.rotate();
@@ -240,6 +263,18 @@ class Board extends React.Component {
     return this.renderWrapperRow(data);
   }
 
+  updateBoardWithLayout() {
+    this.measureAndSaveLayout();
+  }
+
+  measureAndSaveLayout() {
+    const ref = this.ref();
+    ref && ref.measure && ref.measure((fx, fy, width, height, px, py) => {
+      const layout = {x: px, y: py, width, height};
+      this.setLayout(layout);
+    });
+  }
+
   renderWrapperRow(data) {
     const { renderRow } = this.props;
     return (
@@ -271,19 +306,24 @@ class Board extends React.Component {
     });
 
     return (
-      <ScrollView
+      <View
+        ref={this.setRef.bind(this)}
         style={this.props.style}
-        contentContainerStyle={this.props.contentContainerStyle}
-        scrollEnabled={!this.state.movingMode}
-        onScroll={this.onScroll.bind(this)}
-        onScrollEndDrag={this.onScrollEnd.bind(this)}
-        onMomentumScrollEnd={this.onScrollEnd.bind(this)}
-        horizontal={true}
-        {...this.panResponder.panHandlers}
-      >
-        {this.movingTask()}
-        {columnWrappers}
-      </ScrollView>
+        onLayout={this.updateBoardWithLayout.bind(this)}>
+        <ScrollView
+          style={[{flex: 1}, this.props.scrollViewStyle]}
+          contentContainerStyle={this.props.contentContainerStyle}
+          scrollEnabled={!this.state.movingMode}
+          onScroll={this.onScroll.bind(this)}
+          onScrollEndDrag={this.onScrollEnd.bind(this)}
+          onMomentumScrollEnd={this.onScrollEnd.bind(this)}
+          horizontal={true}
+          {...this.panResponder.panHandlers}
+        >
+          {this.movingTask()}
+          {columnWrappers}
+        </ScrollView>
+      </View>
     )
   }
 }

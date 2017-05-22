@@ -71,7 +71,8 @@ Then you can render the `Board`:
 | renderColumnWrapper | `function` | no | function responsible for rendering wrapper of the column if needed |
 | open | `function` | no | function invoked when item pressed |
 | onDragEnd | `function` | no | function invoked when drag is finished |
-| style | `object` | no | styles for the internal `ScrollView`|
+| style | `object` | no | styles for the internal `View` |
+| scrollViewStyle | `object` | no | styles for the internal `ScrollView` |
 | contentContainerStyle | `object` | no | contentContainerStyle for the internal `ScrollView` |
 
 
