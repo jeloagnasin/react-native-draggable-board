@@ -20,9 +20,16 @@ class Board extends React.Component {
   constructor(props) {
     super(props);
 
-    this._attributes = {};
+    // set defaults to zeroes
+    this._attributes = {
+      layout: {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+      }
+    };
     this.verticalOffset = 0;
-
     this.state = {
       rotate: new Animated.Value(0),
       startingX: 0,
@@ -64,6 +71,13 @@ class Board extends React.Component {
 
   componentWillUnmount() {
     this.unsubscribeFromMovingMode();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.shouldUpdate && this.props.shouldUpdate !== prevProps.shouldUpdate) {
+      this.props.rowRepository.updateColumnsLayoutAfterVisibilityChanged();
+      this.measureAndSaveLayout();
+    }
   }
 
   onPanResponderMove(event, gesture, callback) {
@@ -263,10 +277,6 @@ class Board extends React.Component {
     return this.renderWrapperRow(data);
   }
 
-  updateBoardWithLayout() {
-    this.measureAndSaveLayout();
-  }
-
   measureAndSaveLayout() {
     const ref = this.ref();
     ref && ref.measure && ref.measure((fx, fy, width, height, px, py) => {
@@ -305,11 +315,13 @@ class Board extends React.Component {
       return this.props.renderColumnWrapper(column.data(), column.index(), columnComponent);
     });
 
+    console.log('[DEBUG:Render] Board');
+
     return (
       <View
         ref={this.setRef.bind(this)}
         style={this.props.style}
-        onLayout={this.updateBoardWithLayout.bind(this)}>
+        onLayout={this.measureAndSaveLayout.bind(this)}>
         <ScrollView
           style={[{flex: 1}, this.props.scrollViewStyle]}
           contentContainerStyle={this.props.contentContainerStyle}
