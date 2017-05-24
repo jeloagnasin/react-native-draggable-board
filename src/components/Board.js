@@ -254,18 +254,27 @@ class Board extends React.Component {
     this.verticalOffset = event.nativeEvent.contentOffset.x;
   }
 
-  movingStyle(zIndex) {
+  movingStyle(zIndex, draggedItem) {
     var interpolatedRotateAnimation = this.state.rotate.interpolate({
       inputRange: [-this.MAX_RANGE, 0, this.MAX_RANGE],
       outputRange: [`-${this.MAX_DEG}deg`, '0deg', `${this.MAX_DEG}deg`]
     });
-    return {
+
+    let style = {
       transform: [{rotate: interpolatedRotateAnimation}],
       position: 'absolute',
       zIndex: zIndex,
       top: this.state.y - this.TRESHOLD,
       left: this.verticalOffset + this.state.x
     };
+
+    if (draggedItem && draggedItem.layout) {
+      const layout = draggedItem.layout();
+      style.width = layout.width;
+      style.height = layout.height;
+    }
+
+    return style;
   }
 
   movingTask() {
@@ -273,7 +282,7 @@ class Board extends React.Component {
     // Without this when you drop a task it's impossible to drag it again...
     // And -1 is really needed for Android
     const zIndex = movingMode ? 1 : -1;
-    const data = { item: draggedItem, hidden: !movingMode, style: this.movingStyle(zIndex) };
+    const data = { item: draggedItem, hidden: !movingMode, style: this.movingStyle(zIndex, draggedItem) };
     return this.renderWrapperRow(data);
   }
 
@@ -320,21 +329,11 @@ class Board extends React.Component {
     return (
       <View
         ref={this.setRef.bind(this)}
-        style={this.props.style}
-        onLayout={this.measureAndSaveLayout.bind(this)}>
-        <ScrollView
-          style={[{flex: 1}, this.props.scrollViewStyle]}
-          contentContainerStyle={this.props.contentContainerStyle}
-          scrollEnabled={!this.state.movingMode}
-          onScroll={this.onScroll.bind(this)}
-          onScrollEndDrag={this.onScrollEnd.bind(this)}
-          onMomentumScrollEnd={this.onScrollEnd.bind(this)}
-          horizontal={true}
-          {...this.panResponder.panHandlers}
-        >
-          {this.movingTask()}
-          {columnWrappers}
-        </ScrollView>
+        style={[{flex: 1, flexDirection: 'row'}, this.props.style]}
+        onLayout={this.measureAndSaveLayout.bind(this)}
+        {...this.panResponder.panHandlers}>
+        {this.movingTask()}
+        {columnWrappers}
       </View>
     )
   }
