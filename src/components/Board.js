@@ -180,6 +180,7 @@ class Board extends React.Component {
         });
         columnCallback();
         this.rotate();
+        this.props.onDragStart && this.props.onDragStart(item);
       }, this.longPressDuration());
     }
   }
