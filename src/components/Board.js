@@ -34,6 +34,7 @@ class Board extends React.Component {
       onStartShouldSetPanResponder: () => this.state.movingMode,
       onMoveShouldSetPanResponder: () => this.state.movingMode,
       onPanResponderTerminationRequest: () => !this.state.movingMode,
+      onPanResponderGrant: this.onPanResponderGrant.bind(this),
       onPanResponderMove: this.onPanResponderMove.bind(this),
       onPanResponderRelease: this.onPanResponderRelease.bind(this),
       onPanResponderTerminate: this.onPanResponderRelease.bind(this)
@@ -113,7 +114,12 @@ class Board extends React.Component {
     onDragEnd && onDragEnd(srcColumnId, destColumnId, draggedItem);
   }
 
+  onPanResponderGrant() {
+    this.props.shouldStopScrolling(true);
+  }
+
   onPanResponderRelease(e, gesture) {
+    this.props.shouldStopScrolling(false);
     this.x = null;
     this.y = null;
     if (this.state.movingMode) {
@@ -180,7 +186,6 @@ class Board extends React.Component {
         });
         columnCallback();
         this.rotate();
-        this.props.onDragStart && this.props.onDragStart(item);
       }, this.longPressDuration());
     }
   }
