@@ -40,8 +40,8 @@ class Board extends React.Component {
     };
 
     this.panResponder = PanResponder.create({
-      onStartShouldSetPanResponder: () => this.state.movingMode,
-      onMoveShouldSetPanResponder: () => this.state.movingMode,
+      onStartShouldSetPanResponder: () => this.props.editable && this.state.movingMode,
+      onMoveShouldSetPanResponder: () => this.props.editable && this.state.movingMode,
       onPanResponderTerminationRequest: () => !this.state.movingMode,
       onPanResponderGrant: this.onPanResponderGrant.bind(this),
       onPanResponderMove: this.onPanResponderMove.bind(this),
@@ -151,11 +151,11 @@ class Board extends React.Component {
   }
 
   onPanResponderGrant() {
-    this.props.shouldStopScrolling(true);
+    this.props.shouldStopScrolling && this.props.shouldStopScrolling(true);
   }
 
   onPanResponderRelease(e, gesture) {
-    this.props.shouldStopScrolling(false);
+    this.props.shouldStopScrolling && this.props.shouldStopScrolling(false);
     this.x = null;
     this.y = null;
     if (this.state.movingMode) {
@@ -197,7 +197,7 @@ class Board extends React.Component {
   }
 
   onPressIn(columnId, item, columnCallback) {
-    if (item.isLocked()) {
+    if (item.isLocked() || !this.props.editable) {
       return;
     }
     return () => {
@@ -232,7 +232,7 @@ class Board extends React.Component {
   }
 
   onPress(item) {
-    if (item.isLocked()) {
+    if (item.isLocked() || !this.props.editable) {
       return;
     }
 
