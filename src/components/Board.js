@@ -330,8 +330,6 @@ class Board extends React.Component {
       return this.props.renderColumnWrapper(column.data(), column.index(), columnComponent);
     });
 
-    console.log('[DEBUG:Render] Board');
-
     return (
       <View
         ref={this.setRef.bind(this)}
